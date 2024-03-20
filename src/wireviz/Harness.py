@@ -439,6 +439,9 @@ class Harness:
             graph.render(filename=filename, view=view, cleanup=cleanup, renderer=renderer)
             if renderer == "cairo":
                 oldpath = get_outfile(filename, format=f, renderer=renderer)
+                newpath = str(oldpath).replace(".cairo.", ".")
+                if os.path.exists(newpath):
+                    os.remove(newpath)
                 os.rename(oldpath, str(oldpath).replace(".cairo.", "."))
         graph.save(filename=f'{filename}.gv')
         # bom output
