@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
 from graphviz import Graph
+from graphviz.backend.rendering import get_outfile
 from collections import Counter
 from typing import Any, List, Union
 from dataclasses import dataclass
 from pathlib import Path
 from itertools import zip_longest
 import re
+import os
 
 from wireviz import wv_colors, __version__, APP_NAME, APP_URL
 from wireviz.DataClasses import Metadata, Options, Tweak, Connector, Cable
@@ -429,12 +431,15 @@ class Harness:
         data.seek(0)
         return data.read()
 
-    def output(self, filename: (str, Path), view: bool = False, cleanup: bool = True, fmt: tuple = ('pdf', )) -> None:
+    def output(self, filename: (str, Path), view: bool = False, cleanup: bool = True, fmt: tuple = ('pdf', ), renderer: str = "cairo") -> None:
         # graphical output
         graph = self.create_graph()
         for f in fmt:
             graph.format = f
-            graph.render(filename=filename, view=view, cleanup=cleanup)
+            graph.render(filename=filename, view=view, cleanup=cleanup, renderer=renderer)
+            if renderer == "cairo":
+                oldpath = get_outfile(filename, format=f, renderer=renderer)
+                os.rename(oldpath, str(oldpath).replace(".cairo.", "."))
         graph.save(filename=f'{filename}.gv')
         # bom output
         bomlist = bom_list(self.bom())
